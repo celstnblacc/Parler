@@ -7,12 +7,10 @@ const PhraserTextLogo = ({
 }) => {
   return (
     <div
-      className={className}
+      className={`font-normal tracking-[2px] ${className ?? ""}`}
       style={{
         fontFamily: "'Geist Pixel Circle', monospace",
         fontSize: width ? width / 4.2 : 28,
-        fontWeight: "normal",
-        letterSpacing: "2px",
         width,
       }}
     >
