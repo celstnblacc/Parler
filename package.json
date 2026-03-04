@@ -1,5 +1,5 @@
 {
-  "name": "parler-app",
+  "name": "phraser-app",
   "private": true,
   "version": "0.7.12",
   "type": "module",
@@ -9,8 +9,8 @@
     "app:create": "bash scripts/build-app.sh",
     "preview": "vite preview",
     "tauri": "tauri",
-    "tauri:dev:parlerdev": "tauri dev --config src-tauri/tauri.dev.conf.json",
-    "tauri:build:parlerdev": "tauri build --config src-tauri/tauri.dev.conf.json",
+    "tauri:dev:phraserdev": "tauri dev --config src-tauri/tauri.dev.conf.json",
+    "tauri:build:phraserdev": "tauri build --config src-tauri/tauri.dev.conf.json",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write . && cd src-tauri && cargo fmt",

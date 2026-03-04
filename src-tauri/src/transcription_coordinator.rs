@@ -214,6 +214,67 @@ impl TranscriptionCoordinator {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn is_transcribe_binding_accepts_transcribe() {
+        assert!(is_transcribe_binding("transcribe"));
+    }
+
+    #[test]
+    fn is_transcribe_binding_accepts_post_process() {
+        assert!(is_transcribe_binding("transcribe_with_post_process"));
+    }
+
+    #[test]
+    fn is_transcribe_binding_rejects_other() {
+        assert!(!is_transcribe_binding("cancel"));
+        assert!(!is_transcribe_binding("action_1"));
+        assert!(!is_transcribe_binding(""));
+        assert!(!is_transcribe_binding("transcribe_extra"));
+    }
+
+    #[test]
+    fn is_action_binding_accepts_action_prefix() {
+        assert!(is_action_binding("action_1"));
+        assert!(is_action_binding("action_9"));
+        assert!(is_action_binding("action_foo"));
+    }
+
+    #[test]
+    fn is_action_binding_rejects_non_action() {
+        assert!(!is_action_binding("transcribe"));
+        assert!(!is_action_binding("cancel"));
+        assert!(!is_action_binding(""));
+        assert!(!is_action_binding("Action_1")); // case-sensitive
+    }
+
+    #[test]
+    fn parse_action_key_valid_digits() {
+        assert_eq!(parse_action_key("action_1"), Some(1));
+        assert_eq!(parse_action_key("action_9"), Some(9));
+        assert_eq!(parse_action_key("action_0"), Some(0));
+        assert_eq!(parse_action_key("action_255"), Some(255));
+    }
+
+    #[test]
+    fn parse_action_key_invalid() {
+        assert_eq!(parse_action_key("action_"), None); // empty after prefix
+        assert_eq!(parse_action_key("action_abc"), None); // not a number
+        assert_eq!(parse_action_key("transcribe"), None); // no prefix
+        assert_eq!(parse_action_key(""), None);
+    }
+
+    #[test]
+    fn parse_action_key_overflow() {
+        // u8 max is 255, 256 should fail
+        assert_eq!(parse_action_key("action_256"), None);
+        assert_eq!(parse_action_key("action_999"), None);
+    }
+}
+
 fn start(app: &AppHandle, stage: &mut Stage, binding_id: &str, hotkey_string: &str) {
     let Some(action) = ACTION_MAP.get(binding_id) else {
         warn!("No action in ACTION_MAP for '{binding_id}'");

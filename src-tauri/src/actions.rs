@@ -29,11 +29,11 @@ pub struct ActiveActionState(pub Mutex<Option<u8>>);
 #[cfg(target_os = "macos")]
 static FRONTMOST_APP_BUNDLE_ID: Lazy<Mutex<Option<String>>> = Lazy::new(|| Mutex::new(None));
 
-#[cfg(target_os = "macos")]
-fn is_parler_bundle_id(bundle_id: &str) -> bool {
+#[cfg(any(target_os = "macos", test))]
+fn is_phraser_bundle_id(bundle_id: &str) -> bool {
     matches!(
         bundle_id,
-        "com.newblacc.parler" | "com.melvynx.parler" | "computer.handy"
+        "com.newblacc.phraser" | "com.newblacc.parler" | "com.melvynx.parler" | "computer.handy"
     )
 }
 
@@ -50,9 +50,9 @@ fn save_frontmost_app() {
     if let Ok(out) = output {
         let bundle_id = String::from_utf8_lossy(&out.stdout).trim().to_string();
         if !bundle_id.is_empty() {
-            if is_parler_bundle_id(&bundle_id) {
+            if is_phraser_bundle_id(&bundle_id) {
                 debug!(
-                    "Skipping frontmost app save because foreground app is Parler: {}",
+                    "Skipping frontmost app save because foreground app is Phraser: {}",
                     bundle_id
                 );
                 return;
@@ -67,7 +67,7 @@ fn save_frontmost_app() {
 
 /// Re-activate the previously frontmost application before pasting (macOS only).
 /// This ensures the paste keystroke targets the correct app, even if the overlay
-/// or transcription pipeline accidentally brought Parler to the foreground.
+/// or transcription pipeline accidentally brought Phraser to the foreground.
 #[cfg(target_os = "macos")]
 fn restore_frontmost_app() {
     let bundle_id = FRONTMOST_APP_BUNDLE_ID
@@ -76,9 +76,9 @@ fn restore_frontmost_app() {
         .and_then(|mut guard| guard.take());
 
     if let Some(bid) = bundle_id {
-        if is_parler_bundle_id(&bid) {
+        if is_phraser_bundle_id(&bid) {
             debug!(
-                "Skipping frontmost app restore for Parler bundle id: {}",
+                "Skipping frontmost app restore for Phraser bundle id: {}",
                 bid
             );
             return;
@@ -849,7 +849,7 @@ struct TestAction;
 impl ShortcutAction for TestAction {
     fn start(&self, app: &AppHandle, binding_id: &str, shortcut_str: &str) {
         log::info!(
-            "Shortcut ID '{}': Started - {} (App: {})", // Changed "Pressed" to "Started" for consistency
+            "Shortcut ID '{}': Started - {} (App: {})",
             binding_id,
             shortcut_str,
             app.package_info().name
@@ -858,11 +858,47 @@ impl ShortcutAction for TestAction {
 
     fn stop(&self, app: &AppHandle, binding_id: &str, shortcut_str: &str) {
         log::info!(
-            "Shortcut ID '{}': Stopped - {} (App: {})", // Changed "Released" to "Stopped" for consistency
+            "Shortcut ID '{}': Stopped - {} (App: {})",
             binding_id,
             shortcut_str,
             app.package_info().name
         );
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_phraser_bundle_id_recognized() {
+        assert!(is_phraser_bundle_id("com.newblacc.phraser"));
+    }
+
+    #[test]
+    fn legacy_parler_bundle_ids_still_recognized() {
+        assert!(is_phraser_bundle_id("com.newblacc.parler"));
+        assert!(is_phraser_bundle_id("com.melvynx.parler"));
+    }
+
+    #[test]
+    fn handy_bundle_id_recognized() {
+        assert!(is_phraser_bundle_id("computer.handy"));
+    }
+
+    #[test]
+    fn unrelated_bundle_id_rejected() {
+        assert!(!is_phraser_bundle_id("com.apple.safari"));
+        assert!(!is_phraser_bundle_id("com.newblacc.other"));
+        assert!(!is_phraser_bundle_id(""));
+    }
+
+    #[test]
+    fn action_map_has_expected_keys() {
+        assert!(ACTION_MAP.contains_key("transcribe"));
+        assert!(ACTION_MAP.contains_key("transcribe_with_post_process"));
+        assert!(ACTION_MAP.contains_key("cancel"));
+        assert!(ACTION_MAP.contains_key("test"));
     }
 }
 

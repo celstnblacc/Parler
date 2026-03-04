@@ -1,4 +1,4 @@
-# Security Pipeline Quick Reference (Parler)
+# Security Pipeline Quick Reference (Phraser)
 
 ## Purpose
 
