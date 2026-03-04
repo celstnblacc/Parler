@@ -1,10 +1,10 @@
-# 7-Layer Security Pipeline Implementation Summary (Parler Adaptation)
+# 7-Layer Security Pipeline Implementation Summary (Phraser Adaptation)
 
 ## Scope
 
 Adapted from the RepoSec 7-layer model to this repository:
 
-- Repo: `Parler`
+- Repo: `Phraser`
 - Stack: Tauri (Rust backend) + React/TypeScript + Bun
 - Date: 2026-03-04
 
@@ -15,7 +15,7 @@ Adapted from the RepoSec 7-layer model to this repository:
 - `docs/7_LAYER_SECURITY_MODEL.md`
 - `docs/PIPELINE.md`
 
-These documents map the seven layers to Parler-specific tooling and risks, including settings/logging exposure, Tauri command boundaries, and lockfile integrity.
+These documents map the seven layers to Phraser-specific tooling and risks, including settings/logging exposure, Tauri command boundaries, and lockfile integrity.
 
 ### 2. CI Security Workflow
 

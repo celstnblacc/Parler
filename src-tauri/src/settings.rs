@@ -992,4 +992,213 @@ mod tests {
         let changed = ensure_post_process_defaults(&mut settings);
         assert!(!changed);
     }
+
+    // --- ModelUnloadTimeout tests ---
+
+    #[test]
+    fn model_unload_timeout_never_returns_none() {
+        assert_eq!(ModelUnloadTimeout::Never.to_minutes(), None);
+        assert_eq!(ModelUnloadTimeout::Never.to_seconds(), None);
+    }
+
+    #[test]
+    fn model_unload_timeout_immediately_returns_zero() {
+        assert_eq!(ModelUnloadTimeout::Immediately.to_minutes(), Some(0));
+        assert_eq!(ModelUnloadTimeout::Immediately.to_seconds(), Some(0));
+    }
+
+    #[test]
+    fn model_unload_timeout_conversions() {
+        assert_eq!(ModelUnloadTimeout::Min2.to_minutes(), Some(2));
+        assert_eq!(ModelUnloadTimeout::Min2.to_seconds(), Some(120));
+        assert_eq!(ModelUnloadTimeout::Min5.to_minutes(), Some(5));
+        assert_eq!(ModelUnloadTimeout::Min5.to_seconds(), Some(300));
+        assert_eq!(ModelUnloadTimeout::Min10.to_seconds(), Some(600));
+        assert_eq!(ModelUnloadTimeout::Min15.to_seconds(), Some(900));
+        assert_eq!(ModelUnloadTimeout::Hour1.to_minutes(), Some(60));
+        assert_eq!(ModelUnloadTimeout::Hour1.to_seconds(), Some(3600));
+    }
+
+    #[test]
+    fn model_unload_timeout_sec5_debug() {
+        assert_eq!(ModelUnloadTimeout::Sec5.to_minutes(), Some(0));
+        assert_eq!(ModelUnloadTimeout::Sec5.to_seconds(), Some(5));
+    }
+
+    // --- SoundTheme tests ---
+
+    #[test]
+    fn sound_theme_paths() {
+        assert_eq!(
+            SoundTheme::Marimba.to_start_path(),
+            "resources/marimba_start.wav"
+        );
+        assert_eq!(
+            SoundTheme::Marimba.to_stop_path(),
+            "resources/marimba_stop.wav"
+        );
+        assert_eq!(SoundTheme::Pop.to_start_path(), "resources/pop_start.wav");
+        assert_eq!(SoundTheme::Pop.to_stop_path(), "resources/pop_stop.wav");
+        assert_eq!(
+            SoundTheme::Custom.to_start_path(),
+            "resources/custom_start.wav"
+        );
+        assert_eq!(
+            SoundTheme::Custom.to_stop_path(),
+            "resources/custom_stop.wav"
+        );
+    }
+
+    // --- LogLevel serde round-trip tests ---
+
+    #[test]
+    fn log_level_deserializes_from_string() {
+        let json = r#""trace""#;
+        let level: LogLevel = serde_json::from_str(json).unwrap();
+        assert_eq!(level, LogLevel::Trace);
+    }
+
+    #[test]
+    fn log_level_deserializes_from_integer() {
+        // Old numeric format: 1 = Trace, 2 = Debug, etc.
+        let json = "1";
+        let level: LogLevel = serde_json::from_str(json).unwrap();
+        assert_eq!(level, LogLevel::Trace);
+    }
+
+    #[test]
+    fn log_level_round_trip() {
+        for level in [
+            LogLevel::Trace,
+            LogLevel::Debug,
+            LogLevel::Info,
+            LogLevel::Warn,
+            LogLevel::Error,
+        ] {
+            let json = serde_json::to_string(&level).unwrap();
+            let deserialized: LogLevel = serde_json::from_str(&json).unwrap();
+            assert_eq!(level, deserialized);
+        }
+    }
+
+    // --- Default settings sanity ---
+
+    #[test]
+    fn default_settings_has_bindings() {
+        let settings = get_default_settings();
+        assert!(!settings.bindings.is_empty());
+        assert!(settings.bindings.contains_key("transcribe"));
+    }
+
+    #[test]
+    fn default_settings_overlay_position_is_valid() {
+        let settings = get_default_settings();
+        let json = serde_json::to_value(&settings.overlay_position).unwrap();
+        assert!(
+            json.is_string(),
+            "overlay_position should serialize to a string variant"
+        );
+    }
+
+    #[test]
+    fn default_settings_reasonable_history_limit() {
+        let settings = get_default_settings();
+        assert!(settings.history_limit > 0);
+        assert!(settings.history_limit <= 10000);
+    }
+
+    #[test]
+    fn default_settings_word_correction_threshold_in_range() {
+        let settings = get_default_settings();
+        assert!(settings.word_correction_threshold >= 0.0);
+        assert!(settings.word_correction_threshold <= 1.0);
+    }
+
+    #[test]
+    fn default_settings_serializes_to_json() {
+        let settings = get_default_settings();
+        let json = serde_json::to_string(&settings);
+        assert!(json.is_ok(), "Default settings should serialize to JSON");
+    }
+
+    #[test]
+    fn default_settings_round_trip_json() {
+        let settings = get_default_settings();
+        let json = serde_json::to_string(&settings).unwrap();
+        let deserialized: AppSettings = serde_json::from_str(&json).unwrap();
+        assert_eq!(settings.auto_submit, deserialized.auto_submit);
+        assert_eq!(settings.push_to_talk, deserialized.push_to_talk);
+        assert_eq!(settings.selected_language, deserialized.selected_language);
+    }
+
+    // --- Enum serde tests ---
+
+    #[test]
+    fn paste_method_serde_round_trip() {
+        for method in [
+            PasteMethod::CtrlV,
+            PasteMethod::Direct,
+            PasteMethod::None,
+            PasteMethod::ShiftInsert,
+            PasteMethod::CtrlShiftV,
+            PasteMethod::ExternalScript,
+        ] {
+            let json = serde_json::to_string(&method).unwrap();
+            let deserialized: PasteMethod = serde_json::from_str(&json).unwrap();
+            assert_eq!(method, deserialized);
+        }
+    }
+
+    #[test]
+    fn clipboard_handling_serde_round_trip() {
+        for handling in [
+            ClipboardHandling::DontModify,
+            ClipboardHandling::CopyToClipboard,
+        ] {
+            let json = serde_json::to_string(&handling).unwrap();
+            let deserialized: ClipboardHandling = serde_json::from_str(&json).unwrap();
+            assert_eq!(handling, deserialized);
+        }
+    }
+
+    #[test]
+    fn auto_submit_key_serde_round_trip() {
+        for key in [
+            AutoSubmitKey::Enter,
+            AutoSubmitKey::CtrlEnter,
+            AutoSubmitKey::CmdEnter,
+        ] {
+            let json = serde_json::to_string(&key).unwrap();
+            let deserialized: AutoSubmitKey = serde_json::from_str(&json).unwrap();
+            assert_eq!(key, deserialized);
+        }
+    }
+
+    #[test]
+    fn overlay_position_serde_round_trip() {
+        for pos in [
+            OverlayPosition::None,
+            OverlayPosition::Top,
+            OverlayPosition::Bottom,
+        ] {
+            let json = serde_json::to_string(&pos).unwrap();
+            let deserialized: OverlayPosition = serde_json::from_str(&json).unwrap();
+            assert_eq!(pos, deserialized);
+        }
+    }
+
+    #[test]
+    fn recording_retention_period_serde_round_trip() {
+        for period in [
+            RecordingRetentionPeriod::Never,
+            RecordingRetentionPeriod::PreserveLimit,
+            RecordingRetentionPeriod::Days3,
+            RecordingRetentionPeriod::Weeks2,
+            RecordingRetentionPeriod::Months3,
+        ] {
+            let json = serde_json::to_string(&period).unwrap();
+            let deserialized: RecordingRetentionPeriod = serde_json::from_str(&json).unwrap();
+            assert_eq!(period, deserialized);
+        }
+    }
 }

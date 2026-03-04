@@ -1,9 +1,8 @@
-const ParlerTextLogo = ({
+const PhraserTextLogo = ({
   width,
   className,
 }: {
   width?: number;
-  height?: number;
   className?: string;
 }) => {
   return (
@@ -17,9 +16,9 @@ const ParlerTextLogo = ({
         width,
       }}
     >
-      <span className="text-logo-primary">PARLER</span>
+      <span className="text-logo-primary">PHRASER</span>
     </div>
   );
 };
 
-export default ParlerTextLogo;
+export default PhraserTextLogo;

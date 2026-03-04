@@ -1,0 +1,128 @@
+//! Tests that verify the "Phraser" branding is consistent across all config files.
+//! These catch accidental regressions where someone re-introduces "Parler" in configs.
+
+use std::fs;
+use std::path::{Path, PathBuf};
+
+fn crate_dir() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+}
+
+fn project_root() -> PathBuf {
+    crate_dir().parent().unwrap().to_path_buf()
+}
+
+fn read_json(path: &Path) -> serde_json::Value {
+    let content =
+        fs::read_to_string(path).unwrap_or_else(|e| panic!("Failed to read {:?}: {}", path, e));
+    serde_json::from_str(&content).unwrap_or_else(|e| panic!("Failed to parse {:?}: {}", path, e))
+}
+
+#[test]
+fn tauri_conf_product_name_is_phraser() {
+    let conf = read_json(&crate_dir().join("tauri.conf.json"));
+    assert_eq!(conf["productName"].as_str().unwrap(), "Phraser");
+}
+
+#[test]
+fn tauri_conf_identifier_is_phraser() {
+    let conf = read_json(&crate_dir().join("tauri.conf.json"));
+    assert_eq!(conf["identifier"].as_str().unwrap(), "com.newblacc.phraser");
+}
+
+#[test]
+fn tauri_conf_window_title_is_phraser() {
+    let conf = read_json(&crate_dir().join("tauri.conf.json"));
+    let title = conf["app"]["windows"][0]["title"].as_str().unwrap();
+    assert_eq!(title, "Phraser");
+}
+
+#[test]
+fn tauri_conf_updater_endpoint_uses_phraser() {
+    let conf = read_json(&crate_dir().join("tauri.conf.json"));
+    let endpoint = conf["plugins"]["updater"]["endpoints"][0].as_str().unwrap();
+    assert!(
+        endpoint.contains("/Phraser/"),
+        "Updater endpoint should reference Phraser repo, got: {}",
+        endpoint
+    );
+}
+
+#[test]
+fn tauri_dev_conf_product_name_is_phraser_dev() {
+    let conf = read_json(&crate_dir().join("tauri.dev.conf.json"));
+    assert_eq!(conf["productName"].as_str().unwrap(), "PhraserDev");
+}
+
+#[test]
+fn tauri_dev_conf_identifier_is_phraser_dev() {
+    let conf = read_json(&crate_dir().join("tauri.dev.conf.json"));
+    assert_eq!(
+        conf["identifier"].as_str().unwrap(),
+        "com.newblacc.phraser.dev"
+    );
+}
+
+#[test]
+fn cargo_toml_package_name_is_phraser() {
+    let content =
+        fs::read_to_string(crate_dir().join("Cargo.toml")).expect("Failed to read Cargo.toml");
+    assert!(
+        content.contains("name = \"phraser\""),
+        "Cargo.toml [package] name should be 'phraser'"
+    );
+}
+
+#[test]
+fn cargo_toml_lib_name_is_phraser_app_lib() {
+    let content =
+        fs::read_to_string(crate_dir().join("Cargo.toml")).expect("Failed to read Cargo.toml");
+    assert!(
+        content.contains("name = \"phraser_app_lib\""),
+        "Cargo.toml [lib] name should be 'phraser_app_lib'"
+    );
+}
+
+#[test]
+fn package_json_name_is_phraser() {
+    let conf = read_json(&project_root().join("package.json"));
+    assert_eq!(conf["name"].as_str().unwrap(), "phraser-app");
+}
+
+#[test]
+fn index_html_title_is_phraser() {
+    let content =
+        fs::read_to_string(project_root().join("index.html")).expect("Failed to read index.html");
+    assert!(
+        content.contains("<title>Phraser</title>"),
+        "index.html title should be 'Phraser'"
+    );
+}
+
+#[test]
+fn no_stale_parler_in_tauri_conf() {
+    let content = fs::read_to_string(crate_dir().join("tauri.conf.json"))
+        .expect("Failed to read tauri.conf.json");
+    assert!(
+        !content.contains("\"Parler\""),
+        "tauri.conf.json should not contain the old name 'Parler'"
+    );
+    assert!(
+        !content.contains("com.newblacc.parler"),
+        "tauri.conf.json should not contain old bundle id 'com.newblacc.parler'"
+    );
+}
+
+#[test]
+fn no_stale_parler_in_tauri_dev_conf() {
+    let content = fs::read_to_string(crate_dir().join("tauri.dev.conf.json"))
+        .expect("Failed to read tauri.dev.conf.json");
+    assert!(
+        !content.contains("Parler"),
+        "tauri.dev.conf.json should not contain 'Parler'"
+    );
+    assert!(
+        !content.contains("com.newblacc.parler"),
+        "tauri.dev.conf.json should not contain old bundle id"
+    );
+}

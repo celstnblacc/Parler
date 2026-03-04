@@ -53,15 +53,16 @@ fn build_headers(provider: &PostProcessProvider, api_key: &str) -> Result<Header
 
     // Common headers
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+    // Upstream project references kept for API provider compatibility
     headers.insert(
         REFERER,
-        HeaderValue::from_static("https://github.com/cjpais/Handy"),
+        HeaderValue::from_static("https://github.com/newblacc/Phraser"),
     );
     headers.insert(
         USER_AGENT,
-        HeaderValue::from_static("Handy/1.0 (+https://github.com/cjpais/Handy)"),
+        HeaderValue::from_static("Phraser/1.0 (+https://github.com/newblacc/Phraser)"),
     );
-    headers.insert("X-Title", HeaderValue::from_static("Handy"));
+    headers.insert("X-Title", HeaderValue::from_static("Phraser"));
 
     // Provider-specific auth headers
     if !api_key.is_empty() {
@@ -259,6 +260,154 @@ pub async fn fetch_models(
     }
 
     Ok(models)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_provider(id: &str, base_url: &str) -> PostProcessProvider {
+        PostProcessProvider {
+            id: id.to_string(),
+            label: id.to_string(),
+            base_url: base_url.to_string(),
+            allow_base_url_edit: false,
+            models_endpoint: None,
+            supports_structured_output: false,
+        }
+    }
+
+    #[test]
+    fn build_headers_common_fields() {
+        let provider = make_provider("openai", "https://api.openai.com/v1");
+        let headers = build_headers(&provider, "sk-test-key").unwrap();
+
+        assert_eq!(headers.get(CONTENT_TYPE).unwrap(), "application/json");
+        assert!(headers.get(USER_AGENT).is_some());
+        assert!(headers.get(REFERER).is_some());
+    }
+
+    #[test]
+    fn build_headers_bearer_auth_for_openai() {
+        let provider = make_provider("openai", "https://api.openai.com/v1");
+        let headers = build_headers(&provider, "sk-test-key").unwrap();
+
+        assert_eq!(headers.get(AUTHORIZATION).unwrap(), "Bearer sk-test-key");
+    }
+
+    #[test]
+    fn build_headers_anthropic_uses_x_api_key() {
+        let provider = make_provider("anthropic", "https://api.anthropic.com/v1");
+        let headers = build_headers(&provider, "sk-ant-test").unwrap();
+
+        assert_eq!(headers.get("x-api-key").unwrap(), "sk-ant-test");
+        assert_eq!(headers.get("anthropic-version").unwrap(), "2023-06-01");
+        // Should NOT have Bearer auth
+        assert!(headers.get(AUTHORIZATION).is_none());
+    }
+
+    #[test]
+    fn build_headers_empty_api_key_no_auth() {
+        let provider = make_provider("openai", "https://api.openai.com/v1");
+        let headers = build_headers(&provider, "").unwrap();
+
+        assert!(headers.get(AUTHORIZATION).is_none());
+    }
+
+    #[test]
+    fn chat_completion_request_serializes() {
+        let request = ChatCompletionRequest {
+            model: "gpt-4".to_string(),
+            messages: vec![
+                ChatMessage {
+                    role: "system".to_string(),
+                    content: "You are helpful.".to_string(),
+                },
+                ChatMessage {
+                    role: "user".to_string(),
+                    content: "Hello".to_string(),
+                },
+            ],
+            response_format: None,
+        };
+
+        let json = serde_json::to_string(&request).unwrap();
+        assert!(json.contains("gpt-4"));
+        assert!(json.contains("system"));
+        assert!(json.contains("user"));
+        // response_format should be absent (skip_serializing_if)
+        assert!(!json.contains("response_format"));
+    }
+
+    #[test]
+    fn chat_completion_request_with_schema_serializes() {
+        let schema = serde_json::json!({
+            "type": "object",
+            "properties": {
+                "text": { "type": "string" }
+            }
+        });
+
+        let request = ChatCompletionRequest {
+            model: "gpt-4".to_string(),
+            messages: vec![ChatMessage {
+                role: "user".to_string(),
+                content: "test".to_string(),
+            }],
+            response_format: Some(ResponseFormat {
+                format_type: "json_schema".to_string(),
+                json_schema: JsonSchema {
+                    name: "test_output".to_string(),
+                    strict: true,
+                    schema,
+                },
+            }),
+        };
+
+        let json = serde_json::to_string(&request).unwrap();
+        assert!(json.contains("json_schema"));
+        assert!(json.contains("test_output"));
+        assert!(json.contains("strict"));
+    }
+
+    #[test]
+    fn chat_completion_response_deserializes() {
+        let json = r#"{
+            "choices": [{
+                "message": {
+                    "content": "Hello, world!"
+                }
+            }]
+        }"#;
+
+        let response: ChatCompletionResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(response.choices.len(), 1);
+        assert_eq!(
+            response.choices[0].message.content.as_deref(),
+            Some("Hello, world!")
+        );
+    }
+
+    #[test]
+    fn chat_completion_response_no_content() {
+        let json = r#"{
+            "choices": [{
+                "message": {
+                    "content": null
+                }
+            }]
+        }"#;
+
+        let response: ChatCompletionResponse = serde_json::from_str(json).unwrap();
+        assert!(response.choices[0].message.content.is_none());
+    }
+
+    #[test]
+    fn chat_completion_response_empty_choices() {
+        let json = r#"{"choices": []}"#;
+        let response: ChatCompletionResponse = serde_json::from_str(json).unwrap();
+        assert!(response.choices.is_empty());
+    }
 }
 
 async fn fetch_gemini_models(api_key: &str) -> Result<Vec<String>, String> {
