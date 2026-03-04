@@ -65,10 +65,10 @@ Before committing, run the same checks we used in the ship pipeline:
 bun audit
 
 # Rust dependency advisories
-cd src-tauri && cargo audit
+(cd src-tauri && cargo audit)
 
 # Rust tests
-cd src-tauri && cargo test
+(cd src-tauri && cargo test)
 
 # Frontend build validation
 bun run build
