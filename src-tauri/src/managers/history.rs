@@ -448,8 +448,12 @@ impl HistoryManager {
         Ok(())
     }
 
-    pub fn get_audio_file_path(&self, file_name: &str) -> PathBuf {
-        self.recordings_dir.join(file_name)
+    pub fn get_audio_file_path(&self, file_name: &str) -> Result<PathBuf> {
+        if file_name.contains("..") || file_name.contains('/') || file_name.contains('\\') {
+            anyhow::bail!("Invalid file name");
+        }
+
+        Ok(self.recordings_dir.join(file_name))
     }
 
     pub fn update_transcription_text(&self, id: i64, new_text: &str) -> Result<()> {
@@ -502,7 +506,7 @@ impl HistoryManager {
         // Get the entry to find the file name
         if let Some(entry) = self.get_entry_by_id(id).await? {
             // Delete the audio file first
-            let file_path = self.get_audio_file_path(&entry.file_name);
+            let file_path = self.get_audio_file_path(&entry.file_name)?;
             if file_path.exists() {
                 if let Err(e) = fs::remove_file(&file_path) {
                     error!("Failed to delete audio file {}: {}", entry.file_name, e);
