@@ -5,6 +5,7 @@ use crate::settings::{get_settings, AutoSubmitKey, ClipboardHandling, PasteMetho
 use enigo::{Direction, Enigo, Key, Keyboard};
 use log::info;
 use std::process::Command;
+#[cfg(target_os = "linux")]
 use std::sync::OnceLock;
 use std::time::Duration;
 use tauri::{AppHandle, Manager};

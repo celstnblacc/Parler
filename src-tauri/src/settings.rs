@@ -20,10 +20,15 @@ pub const LANG_TRADITIONAL_CHINESE: &str = "zh-Hant";
 pub const PROVIDER_ID_ANTHROPIC: &str = "anthropic";
 pub const PROVIDER_ID_GEMINI: &str = "gemini";
 pub const PROVIDER_ID_OPENAI: &str = "openai";
+#[allow(dead_code)]
 pub const PROVIDER_ID_OPENROUTER: &str = "openrouter";
+#[allow(dead_code)]
 pub const PROVIDER_ID_GROQ: &str = "groq";
+#[allow(dead_code)]
 pub const PROVIDER_ID_CEREBRAS: &str = "cerebras";
+#[allow(dead_code)]
 pub const PROVIDER_ID_ZAI: &str = "zai";
+#[allow(dead_code)]
 pub const PROVIDER_ID_CUSTOM: &str = "custom";
 
 #[derive(Serialize, Debug, Clone, Copy, PartialEq, Eq, Type)]

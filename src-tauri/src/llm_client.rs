@@ -1,6 +1,4 @@
-use crate::settings::{
-    PostProcessProvider, PROVIDER_ID_ANTHROPIC, PROVIDER_ID_GEMINI, PROVIDER_ID_OPENAI,
-};
+use crate::settings::{PostProcessProvider, PROVIDER_ID_ANTHROPIC, PROVIDER_ID_GEMINI};
 use log::debug;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE, REFERER, USER_AGENT};
 use serde::{Deserialize, Serialize};
@@ -343,6 +341,7 @@ pub async fn fetch_models(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::settings::PROVIDER_ID_OPENAI;
 
     fn make_provider(id: &str, base_url: &str) -> PostProcessProvider {
         PostProcessProvider {
