@@ -114,9 +114,12 @@ const settingUpdaters: {
     commands.changeMuteWhileRecordingSetting(value as boolean),
   append_trailing_space: (value) =>
     commands.changeAppendTrailingSpaceSetting(value as boolean),
-  log_level: (value) => commands.setLogLevel(value as NonNullable<Settings["log_level"]>),
+  log_level: (value) =>
+    commands.setLogLevel(value as NonNullable<Settings["log_level"]>),
   model_unload_timeout: (value) =>
-    commands.setModelUnloadTimeout(value as Settings["model_unload_timeout"]),
+    commands.setModelUnloadTimeout(
+      value as NonNullable<Settings["model_unload_timeout"]>,
+    ),
   keyboard_implementation: (value) =>
     commands.changeKeyboardImplementationSetting(value as string),
   app_language: (value) => commands.changeAppLanguageSetting(value as string),
