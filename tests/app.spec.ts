@@ -79,4 +79,43 @@ test.describe("Phraser App — Frontend Rendering", () => {
     await page.waitForTimeout(1000);
     expect(jsErrors).toEqual([]);
   });
+
+  test("CSS assets are loaded", async ({ page }) => {
+    const cssResponses: number[] = [];
+    page.on("response", (response) => {
+      if (response.url().includes(".css")) {
+        cssResponses.push(response.status());
+      }
+    });
+    await page.goto("/");
+    await page.waitForTimeout(500);
+    expect(cssResponses.every((s) => s === 200)).toBe(true);
+  });
+
+  test("JS assets are loaded without network errors", async ({ page }) => {
+    const failedAssets: string[] = [];
+    page.on("response", (response) => {
+      const url = response.url();
+      if (
+        (url.includes(".js") || url.includes(".ts")) &&
+        response.status() >= 400
+      ) {
+        failedAssets.push(`${response.status()} ${url}`);
+      }
+    });
+    await page.goto("/");
+    await page.waitForTimeout(500);
+    expect(failedAssets).toEqual([]);
+  });
+});
+
+test.describe("Phraser App — i18n", () => {
+  test("page language attribute is set", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForTimeout(500);
+    // The <html> element should have a lang attribute once i18n initializes
+    const lang = await page.locator("html").getAttribute("lang");
+    // lang is set by i18next after init — it should be a valid BCP 47 code
+    expect(lang).toBeTruthy();
+  });
 });
