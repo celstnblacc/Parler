@@ -787,8 +787,7 @@ impl ShortcutAction for TranscribeAction {
                 );
 
                 let settings = get_settings(&ah);
-                let (original_model, switched_model) =
-                    maybe_switch_model_for_long_audio(&tm, &settings, samples.len());
+                let original_model = maybe_switch_model_for_long_audio(&tm, &settings, samples.len());
 
                 // TODO: Change TranscriptionManager::transcribe() to take &[f32] so this
                 // clone can be deferred to the success-and-non-empty branch. Currently
@@ -815,14 +814,15 @@ impl ShortcutAction for TranscribeAction {
                             show_processing_overlay(&ah);
                         }
 
-                        let (final_text, post_processed_text, post_process_prompt) =
-                            build_processed_text(
-                                &settings,
-                                &transcription,
-                                selected_action,
-                                post_process,
-                            )
-                            .await;
+                        let result = build_processed_text(
+                            &settings,
+                            &transcription,
+                            selected_action,
+                            post_process,
+                        ).await;
+                        let final_text = result.final_text;
+                        let post_processed_text = result.post_processed_text;
+                        let post_process_prompt = result.post_process_prompt;
 
                         let action_key_for_history = if post_processed_text.is_some() {
                             selected_action_key
@@ -849,7 +849,7 @@ impl ShortcutAction for TranscribeAction {
                     }
                 }
 
-                restore_model_if_switched(&tm, original_model, switched_model);
+                restore_model_after_long_audio(&tm, original_model);
             } else {
                 debug!("No samples retrieved from recording stop");
                 reset_transcribe_ui(&ah);
