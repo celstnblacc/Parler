@@ -46,19 +46,14 @@ pub fn handle_shortcut_event(
         return;
     }
 
-    // Action bindings (Ctrl+1…9):
-    // - When idle: start recording with this action pre-selected (one-key workflow).
-    // - When recording: select/change the action mid-recording.
+    // Action bindings (Ctrl+1…9): always delegate to start_with_action.
+    // The coordinator handles both cases: idle → start recording with action
+    // pre-selected; recording → stop and apply the action.
     if is_action_binding(binding_id) {
         if is_pressed {
             if let Some(key) = parse_action_key(binding_id) {
                 if let Some(coordinator) = app.try_state::<TranscriptionCoordinator>() {
-                    let audio_manager = app.state::<Arc<AudioRecordingManager>>();
-                    if audio_manager.is_recording() {
-                        coordinator.select_action(key);
-                    } else {
-                        coordinator.start_with_action(key, hotkey_string);
-                    }
+                    coordinator.start_with_action(key, hotkey_string);
                 }
             }
         }
