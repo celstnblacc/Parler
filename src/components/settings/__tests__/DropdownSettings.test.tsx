@@ -216,7 +216,7 @@ describe("LogLevelSelector", () => {
 describe("ClipboardHandlingSetting", () => {
   it("renders the clipboard handling title", () => {
     mockUseSettings.mockReturnValue(
-      makeSettings({ clipboard_handling: "restore" }),
+      makeSettings({ clipboard_handling: "dont_modify" }),
     );
     render(<ClipboardHandlingSetting />);
     expect(
@@ -225,7 +225,7 @@ describe("ClipboardHandlingSetting", () => {
   });
 
   it("calls updateSetting when option is changed", async () => {
-    const settings = makeSettings({ clipboard_handling: "restore" });
+    const settings = makeSettings({ clipboard_handling: "dont_modify" });
     mockUseSettings.mockReturnValue(settings);
     render(<ClipboardHandlingSetting />);
     // Index 0 is the tooltip SVG (role="button"); index 1 is the dropdown trigger
@@ -247,7 +247,7 @@ describe("ClipboardHandlingSetting", () => {
 describe("PasteMethodSetting", () => {
   it("renders the paste method title", () => {
     mockUseSettings.mockReturnValue(
-      makeSettings({ paste_method: "clipboard" }),
+      makeSettings({ paste_method: "ctrl_v" }),
     );
     render(<PasteMethodSetting />);
     expect(
@@ -256,7 +256,7 @@ describe("PasteMethodSetting", () => {
   });
 
   it("calls updateSetting when a method is selected", async () => {
-    const settings = makeSettings({ paste_method: "clipboard" });
+    const settings = makeSettings({ paste_method: "ctrl_v" });
     mockUseSettings.mockReturnValue(settings);
     render(<PasteMethodSetting />);
     // Index 0 is the tooltip SVG (role="button"); index 1 is the dropdown trigger
