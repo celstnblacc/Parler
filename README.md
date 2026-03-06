@@ -1,7 +1,7 @@
 # Phraser
 
-> **This is a personal fork of [cjpais/Handy](https://github.com/cjpais/Handy)** by newblacc.
-> It adds custom features on top of the original Handy app while keeping full compatibility with upstream.
+> **This is a personal fork of [Melvynx/Parler](https://github.com/Melvynx/Parler)** by newblacc, which itself is a fork of [cjpais/Handy](https://github.com/cjpais/Handy).
+> It adds custom features on top of the original while keeping full compatibility with upstream.
 
 ## Custom Additions
 
@@ -22,7 +22,7 @@ Phraser is a cross-platform desktop application that provides simple, privacy-fo
 
 ## Why Phraser?
 
-Phraser was created to fill the gap for a truly open source, extensible speech-to-text tool. As stated on [handy.computer](https://handy.computer):
+Phraser was created to fill the gap for a truly open source, extensible speech-to-text tool:
 
 - **Free**: Accessibility tooling belongs in everyone's hands, not behind a paywall
 - **Open Source**: Together we can build further. Extend Phraser for yourself and contribute to something bigger
@@ -50,8 +50,7 @@ The process is entirely local:
 
 ### Installation
 
-1. Download the latest release from the [releases page](https://github.com/newblacc/Phraser/releases) or the [website](https://handy.computer)
-   - **macOS**: Also available via [Homebrew cask](https://formulae.brew.sh/cask/handy): `brew install --cask handy`
+1. Download the latest release from the [releases page](https://github.com/newblacc/Phraser/releases)
 2. Install the application
 3. Launch Phraser and grant necessary system permissions (microphone, accessibility)
 4. Configure your preferred keyboard shortcuts in Settings
@@ -132,24 +131,24 @@ Phraser supports command-line flags for controlling a running instance and custo
 **Remote control flags** (sent to an already-running instance via the single-instance plugin):
 
 ```bash
-handy --toggle-transcription    # Toggle recording on/off
-handy --toggle-post-process     # Toggle recording with post-processing on/off
-handy --cancel                  # Cancel the current operation
+phraser --toggle-transcription    # Toggle recording on/off
+phraser --toggle-post-process     # Toggle recording with post-processing on/off
+phraser --cancel                  # Cancel the current operation
 ```
 
 **Startup flags:**
 
 ```bash
-handy --start-hidden            # Start without showing the main window
-handy --no-tray                 # Start without the system tray icon
-handy --debug                   # Enable debug mode with verbose logging
-handy --help                    # Show all available flags
+phraser --start-hidden            # Start without showing the main window
+phraser --no-tray                 # Start without the system tray icon
+phraser --debug                   # Enable debug mode with verbose logging
+phraser --help                    # Show all available flags
 ```
 
 Flags can be combined for autostart scenarios:
 
 ```bash
-handy --start-hidden --no-tray
+phraser --start-hidden --no-tray
 ```
 
 > **macOS tip:** When Phraser is installed as an app bundle, invoke the binary directly:
@@ -214,7 +213,7 @@ Without these tools, Phraser falls back to enigo which may have limited compatib
   1. Open **Settings > Keyboard > Keyboard Shortcuts > Custom Shortcuts**
   2. Click the **+** button to add a new shortcut
   3. Set the **Name** to `Toggle Phraser Transcription`
-  4. Set the **Command** to `handy --toggle-transcription`
+  4. Set the **Command** to `phraser --toggle-transcription`
   5. Click **Set Shortcut** and press your desired key combination (e.g., `Super+O`)
 
   **KDE Plasma:**
@@ -222,14 +221,14 @@ Without these tools, Phraser falls back to enigo which may have limited compatib
   2. Click **Edit > New > Global Shortcut > Command/URL**
   3. Name it `Toggle Phraser Transcription`
   4. In the **Trigger** tab, set your desired key combination
-  5. In the **Action** tab, set the command to `handy --toggle-transcription`
+  5. In the **Action** tab, set the command to `phraser --toggle-transcription`
 
   **Sway / i3:**
 
   Add to your config file (`~/.config/sway/config` or `~/.config/i3/config`):
 
   ```ini
-  bindsym $mod+o exec handy --toggle-transcription
+  bindsym $mod+o exec phraser --toggle-transcription
   ```
 
   **Hyprland:**
@@ -237,21 +236,21 @@ Without these tools, Phraser falls back to enigo which may have limited compatib
   Add to your config file (`~/.config/hypr/hyprland.conf`):
 
   ```ini
-  bind = $mainMod, O, exec, handy --toggle-transcription
+  bind = $mainMod, O, exec, phraser --toggle-transcription
   ```
 
 - You can also manage global shortcuts outside of Phraser via Unix signals, which lets Wayland window managers or other hotkey daemons keep ownership of keybindings:
 
-  | Signal    | Action                                    | Example                |
-  | --------- | ----------------------------------------- | ---------------------- |
-  | `SIGUSR2` | Toggle transcription                      | `pkill -USR2 -n handy` |
-  | `SIGUSR1` | Toggle transcription with post-processing | `pkill -USR1 -n handy` |
+  | Signal    | Action                                    | Example                  |
+  | --------- | ----------------------------------------- | ------------------------ |
+  | `SIGUSR2` | Toggle transcription                      | `pkill -USR2 -n phraser` |
+  | `SIGUSR1` | Toggle transcription with post-processing | `pkill -USR1 -n phraser` |
 
   Example Sway config:
 
   ```ini
-  bindsym $mod+o exec pkill -USR2 -n handy
-  bindsym $mod+p exec pkill -USR1 -n handy
+  bindsym $mod+o exec pkill -USR2 -n phraser
+  bindsym $mod+p exec pkill -USR1 -n phraser
   ```
 
   `pkill` here simply delivers the signal—it does not terminate the process.
@@ -326,9 +325,9 @@ If you're behind a proxy, firewall, or in a restricted network environment where
 
 The typical paths are:
 
-- **macOS**: `~/Library/Application Support/com.pais.handy/`
-- **Windows**: `C:\Users\{username}\AppData\Roaming\com.pais.handy\`
-- **Linux**: `~/.config/com.pais.handy/`
+- **macOS**: `~/Library/Application Support/com.newblacc.phraser/`
+- **Windows**: `C:\Users\{username}\AppData\Roaming\com.newblacc.phraser\`
+- **Linux**: `~/.config/com.newblacc.phraser/`
 
 #### Step 2: Create Models Directory
 
@@ -336,10 +335,10 @@ Inside your app data directory, create a `models` folder if it doesn't already e
 
 ```bash
 # macOS/Linux
-mkdir -p ~/Library/Application\ Support/com.pais.handy/models
+mkdir -p ~/Library/Application\ Support/com.newblacc.phraser/models
 
 # Windows (PowerShell)
-New-Item -ItemType Directory -Force -Path "$env:APPDATA\com.pais.handy\models"
+New-Item -ItemType Directory -Force -Path "$env:APPDATA\com.newblacc.phraser\models"
 ```
 
 #### Step 3: Download Model Files
@@ -428,7 +427,7 @@ Phraser can auto-discover custom Whisper GGML models placed in the `models` dire
 2. **Fork the repository** and create a feature branch
 3. **Test thoroughly** on your target platform
 4. **Submit a pull request** with clear description of changes
-5. **Join the discussion** - reach out at [contact@handy.computer](mailto:contact@handy.computer)
+5. **Join the discussion** on [GitHub Issues](https://github.com/newblacc/Phraser/issues)
 
 The goal is to create both a useful tool and a foundation for others to build upon—a well-patterned, simple codebase that serves the community.
 
@@ -445,15 +444,15 @@ The goal is to create both a useful tool and a foundation for others to build up
     <img src="sponsor-images/epicenter.png" alt="Epicenter" width="120" height="120">
   </a>
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://boltai.com?utm_source=handy">
+  <a href="https://boltai.com?utm_source=phraser">
     <img src="sponsor-images/boltai.jpg" alt="Bolt AI" width="120" height="120">
   </a>
 </div>
 
 ## Related Projects
 
-- **[Phraser CLI](https://github.com/cjpais/handy-cli)** - The original Python command-line version
-- **[handy.computer](https://handy.computer)** - Project website with demos and documentation
+- **[Parler](https://github.com/Melvynx/Parler)** - The direct upstream fork Phraser is based on
+- **[Handy](https://github.com/cjpais/Handy)** - The original project by cjpais
 
 ## License
 
